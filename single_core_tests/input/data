@@ -63,7 +63,7 @@
  startTime=0,
 #nTimeSteps=62800,
 # number of time steps, currently 72 hours
- nTimeSteps=25920,
+ nTimeSteps=900,
 # time step in seconds
  deltaT=10,
  abEps=0.1,

@@ -1,12 +1,7 @@
-# Makefile for model with remote build and data directory
+USER = jessecusack
 
-RUN = A6
-USER = gunnar
-REMOTE_DIR = /Volumes/svalbard/mitgcm/sptest/
-CURRENT_DIR = @pwd
-
-MITGCM_DIR = /Users/gunnar/Projects/model/MITgcm
-OPTFILE = /Users/gunnar/Projects/model/upolu_mitgcm_optfile
+MITGCM_DIR = /Users/Cusack/MITgcm
+OPTFILE = /Users/Cusack/MITgcm/tools/build_options/SIOiMac
 
 .PHONY: all link build
 
@@ -15,6 +10,7 @@ help:
 	@echo "  all           to run all processing steps"
 	@echo "  link          to generate directories and link files"
 	@echo "  build         to build the model"
+	@echo "  clean         to clean up everything inc. directories run and build"
 
 
 # Group some processing steps
@@ -29,9 +25,8 @@ build: make_dirs genmake buildmodel
 # set up directories
 make_dirs:
 	@echo "generating directories on scratch drive"
-	@mkdir -p $(REMOTE_DIR)$(RUN)/build
-	@mkdir -p $(REMOTE_DIR)$(RUN)/run
-	@mkdir -p $(REMOTE_DIR)$(RUN)/run/allmnc
+	@mkdir -p build/
+	@mkdir -p run/
 
 # link input files and utils
 DATA_FILES = $(abspath $(wildcard input/data*))
@@ -40,28 +35,27 @@ CODE_FILES = $(abspath $(wildcard code/*))
 
 link_input:
 	@echo "linking input files to run directory"
-	@ln -fs $(DATA_FILES) $(REMOTE_DIR)$(RUN)/run
-	@ln -fs $(MORE_FILES) $(REMOTE_DIR)$(RUN)/run
+	@ln -fs $(DATA_FILES) run/
+	@ln -fs $(MORE_FILES) run/
 	@echo "linking code files to build directory"
-	@ln -fs $(CODE_FILES) $(REMOTE_DIR)$(RUN)/build
-	@echo "linking utility script"
-	@ln -fs $(abspath ../utils/gluemncbig) $(REMOTE_DIR)$(RUN)/run/allmnc
+	@ln -fs $(CODE_FILES) build/
 
 # generate the makefile
 genmake:
 	@echo "running genmake"
-	@$(MITGCM_DIR)/tools/./genmake2 -rootdir=$(MITGCM_DIR) -mpi -of=$(OPTFILE)  -mods=code -mf=$(REMOTE_DIR)/$(RUN)/build/Makefile
+	@$(MITGCM_DIR)/tools/./genmake2 -rd=$(MITGCM_DIR) -of=$(OPTFILE) -mods=$(CURDIR)/code/ -mf=$(CURDIR)/build/Makefile
 	@echo "moving files"
-	@mv AD_CONFIG.h PACKAGES_CONFIG.h genmake.log $(REMOTE_DIR)/$(RUN)/build
+	@mv AD_CONFIG.h PACKAGES_CONFIG.h genmake.log build/
 
 # build the model
 buildmodel:
 	@echo "building model"
-	@cd $(REMOTE_DIR)/$(RUN)/build/ && make depend && make
+	@cd build/ && make -j 4 depend && make -j 4
 	@echo "link executable to run directory"
-	@ln -s $(REMOTE_DIR)/$(RUN)/build/mitgcmuv $(REMOTE_DIR)/$(RUN)/run/
+	@cp build/mitgcmuv run/
 
-
-# MATLAB SCRIPTS
-# to run a matlab script include it like this:
-# matlabnographics -r "run('/full/path/script.m')"
+# clean stuff up
+clean:
+	@echo "cleaning everything (meaning EVERYTHING!)"
+	@cd build/ && make CLEAN && cd ../
+	@rm -rf run/ build/
