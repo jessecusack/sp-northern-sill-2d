@@ -1,3 +1,4 @@
 */build
-*/run
+*/run*
 .ipynb_checkpoints
+.DS_Store
