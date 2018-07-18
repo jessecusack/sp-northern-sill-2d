@@ -16,7 +16,7 @@ fig, ax = plt.subplots(1, 1)
 ax.plot(-grid.Depth)
 
 # %% towyo section
-it = 240
+it = 298
 ysl = slice(500, 2600)
 zsl = slice(80, 130)
 
@@ -71,8 +71,8 @@ axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).
 
 fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
 for iz in izs:
-    ax.semilogy(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-                label='{} {}'.format(grid.Z[iz].values, grid.Z.units))
+    ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
+            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
 
 ax.legend()
 
@@ -98,7 +98,7 @@ axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).
 fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
 for iz in izs:
     ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{} {}'.format(grid.Z[iz].values, grid.Z.units))
+            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
 
 ax.legend()
 
@@ -124,7 +124,7 @@ axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).
 fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
 for iz in izs:
     ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{} {}'.format(grid.Z[iz].values, grid.Z.units))
+            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
 
 ax.legend()
 
@@ -150,6 +150,6 @@ axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).
 fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
 for iz in izs:
     ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{} {}'.format(grid.Z[iz].values, grid.Z.units))
+            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
 
 ax.legend()
