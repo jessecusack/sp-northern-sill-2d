@@ -2,6 +2,7 @@ import os
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
+import scipy.integrate as itr
 
 data_dir = '../run1'
 diag1_file = 'diag1.glob.nc'
@@ -46,110 +47,88 @@ for it in range(diag1['T'].size):
                       vmin=-11, vmax=-4, rasterized=True)
     axs[0].set_title('{} {}'.format(diag1['T'][it].values, diag1['T'][it].units))
     name = '{:03d}.png'.format(it)
-    fig.savefig(os.path.join(save_dir, name), bbox_inches='tight', pad_inches=0., dpi=200)
+    fig.savefig(os.path.join(save_dir, 'frames', name), bbox_inches='tight', pad_inches=0., dpi=200)
 
 plt.switch_backend("Qt5Agg")
 
-# %% MP on sill top
-iy = 861
-iz0 = 55
-iz1 = 104
-zsl = slice(iz0, iz1)
-izs = np.arange(iz0, iz1, 9)
+# %% MP type plots
+iyl = [861, 1010, 2000, 2500]
+iz0l = [55, 64, 74, 79]
+iz1l = [104, 114, 124, 129]
 
-fig, ax = plt.subplots(1, 1)
-ax.plot(grid.Y, -grid.Depth)
-ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
-ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
+for iy, iz0, iz1 in zip(iyl, iz0l, iz1l):
+    zsl = slice(iz0, iz1)
+    izs = np.arange(iz0, iz1, 9)
 
-fig, axs = plt.subplots(2, 1, figsize=(6.5, 4), sharex=True, sharey=True)
-axs[0].pcolormesh(diag1['T'], grid.Z[zsl], diag1.VVEL[:, zsl, iy, 0].T,
-                  vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
-axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).T,
-                  vmin=-11, vmax=-4, rasterized=True)
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(grid.Y, -grid.Depth)
+    ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
+    ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
+    name = '{:04d}_MP_profile.png'.format(iy)
+    fig.savefig(os.path.join(save_dir, name), bbox_inches='tight', pad_inches=0., dpi=200)
 
+    fig, axs = plt.subplots(2, 1, figsize=(6.5, 4), sharex=True, sharey=True)
+    axs[0].pcolormesh(diag1['T'], grid.Z[zsl], diag1.VVEL[:, zsl, iy, 0].T,
+                      vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
+    axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).T,
+                      vmin=-11, vmax=-4, rasterized=True)
+    name = '{:04d}_MP_timeseries.png'.format(iy)
+    fig.savefig(os.path.join(save_dir, name), bbox_inches='tight', pad_inches=0., dpi=200)
 
-fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
-for iz in izs:
-    ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
+    fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
+    for iz in izs:
+        ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
+                label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
 
-ax.legend()
+    ax.legend()
+    name = '{:04d}_MP_eps.png'.format(iy)
+    fig.savefig(os.path.join(save_dir, name), bbox_inches='tight', pad_inches=0., dpi=200)
 
-# %% MP just past sill top
-iy = 1010
-iz0 = 64
-iz1 = 114
-zsl = slice(iz0, iz1)
-izs = np.arange(iz0, iz1, 9)
+# %% Compare with no tides
+diag6 = xr.open_dataset('../../../dump/A6/run/diag1.glob.nc')
 
-fig, ax = plt.subplots(1, 1)
-ax.plot(grid.Y, -grid.Depth)
-ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
-ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
+iyl = [1010, 2000, 2500]
+iz0l = [64, 74, 79]
+iz1l = [114, 124, 129]
 
-fig, axs = plt.subplots(2, 1, figsize=(6.5, 4), sharex=True, sharey=True)
-axs[0].pcolormesh(diag1['T'], grid.Z[zsl], diag1.VVEL[:, zsl, iy, 0].T,
-                  vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
-axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).T,
-                  vmin=-11, vmax=-4, rasterized=True)
+for iy, iz0, iz1 in zip(iyl, iz0l, iz1l):
+    zsl = slice(iz0, iz1)
+    izs = np.array([iz1-5])
 
+    fig, ax = plt.subplots(1, 1)
+    ax.plot(grid.Y, -grid.Depth)
+    ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
+    ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
 
-fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
-for iz in izs:
-    ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
+    fig, axs = plt.subplots(2, 1, figsize=(6.5, 3), sharex=True,
+                            gridspec_kw={'height_ratios': [1, 5]})
 
-ax.legend()
+    axs[0].set_title('{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
+    for i, iz in enumerate(izs):
+        axs[0].plot(diag1['T'], 3*np.sin(2*np.pi*diag1['T']/44640))
+        axs[1].plot(diag1['T'], diag1.KLeps[:, iz, iy, 0], 'C{}-'.format(i),
+                    label='tides')
+        axs[1].plot(diag6['T'], diag6.KLeps[:, iz, iy, 0], 'C{}:'.format(i),
+                    label='no tides')
 
-# %% MP on down slope
-iy = 2000
-iz0 = 74
-iz1 = 124
-zsl = slice(iz0, iz1)
-izs = np.arange(iz0, iz1, 9)
+    axs[1].legend()
 
-fig, ax = plt.subplots(1, 1)
-ax.plot(grid.Y, -grid.Depth)
-ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
-ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
+eps1m = diag1.KLeps.mean(axis=(1, 2, 3))
+eps6m = diag6.KLeps.mean(axis=(1, 2, 3))
+fig, axs = plt.subplots(3, 1, figsize=(6.5, 4), sharex=True,
+                        gridspec_kw={'height_ratios': [1, 4, 4]})
 
-fig, axs = plt.subplots(2, 1, figsize=(6.5, 4), sharex=True, sharey=True)
-axs[0].pcolormesh(diag1['T'], grid.Z[zsl], diag1.VVEL[:, zsl, iy, 0].T,
-                  vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
-axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).T,
-                  vmin=-11, vmax=-4, rasterized=True)
+axs[0].plot(diag1['T'], 3*np.sin(2*np.pi*diag1['T']/44640))
+axs[1].plot(diag1['T'], eps1m, label='tides')
+axs[1].plot(diag6['T'], eps6m, label='no tides')
+axs[2].plot(diag1['T'], itr.cumtrapz(eps1m, diag1['T'], initial=0)/diag1['T'])
+axs[2].plot(diag6['T'], itr.cumtrapz(eps6m, diag6['T'], initial=0)/diag6['T'])
+axs[1].legend()
 
+axs[0].set_ylabel('$v_{M2}$ (cm s$^{-1}$)')
+axs[1].set_ylabel('Mean $\epsilon$\n(W kg$^{-1}$)')
+axs[2].set_ylabel('Cumulative $\epsilon$\n(W kg$^{-1}$)')
 
-fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
-for iz in izs:
-    ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
-
-ax.legend()
-
-# %% MP downstream
-iy = 2500
-iz0 = 79
-iz1 = 129
-zsl = slice(iz0, iz1)
-izs = np.arange(iz0, iz1, 9)
-
-fig, ax = plt.subplots(1, 1)
-ax.plot(grid.Y, -grid.Depth)
-ax.plot(grid.Y[iy].values*np.ones(grid.Z[zsl].shape), grid.Z[zsl])
-ax.plot(grid.Y[iy].values*np.ones(izs.shape), grid.Z[izs], 'o')
-
-fig, axs = plt.subplots(2, 1, figsize=(6.5, 4), sharex=True, sharey=True)
-axs[0].pcolormesh(diag1['T'], grid.Z[zsl], diag1.VVEL[:, zsl, iy, 0].T,
-                  vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
-axs[1].pcolormesh(diag1['T'], grid.Z[zsl], np.log10(diag1.KLeps[:, zsl, iy, 0]).T,
-                  vmin=-11, vmax=-4, rasterized=True)
-
-
-fig, ax = plt.subplots(1, 1, figsize=(6.5, 3))
-for iz in izs:
-    ax.plot(diag1['T'], diag1.KLeps[:, iz, iy, 0],
-            label='{:1.0f} {}'.format(grid.Z[iz].values, grid.Z.units))
-
-ax.legend()
+name = 'tide_notide_comparison_mean_eps.png'
+fig.savefig(os.path.join(save_dir, name), bbox_inches='tight', pad_inches=0.,
+            dpi=200)
