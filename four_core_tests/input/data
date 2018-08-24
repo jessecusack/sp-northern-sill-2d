@@ -59,11 +59,11 @@
 
 # Time stepping parameters
  &PARM03
- niter0=0,
- startTime=0,
+ niter0=8640,
+#startTime=0,
 #nTimeSteps=62800,
 # number of time steps, currently 24 hours
- nTimeSteps=8640,
+ nTimeSteps=34560,
 # time step in seconds
  deltaT=10,
  abEps=0.1,
