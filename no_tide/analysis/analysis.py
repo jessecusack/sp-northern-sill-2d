@@ -4,7 +4,7 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import scipy.integrate as itr
 
-data_dir = '../run'
+data_dir = '../run1'
 diag1_file = 'diag1.glob.nc'
 grid_file = 'grid.glob.nc'
 save_dir = 'figures'
