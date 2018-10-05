@@ -1,8 +1,12 @@
 import os
 import numpy as np
 import xarray as xr
+import matplotlib
 import matplotlib.pyplot as plt
 import scipy.integrate as itr
+
+matplotlib.rc('font', size=8)
+matplotlib.rc('axes', titlepad=1)
 
 data_dir = '../run'
 diag1_file = 'diag1.glob.nc'
@@ -48,6 +52,29 @@ for it in range(diag1['T'].size):
     axs[0].set_title('{} {}'.format(diag1['T'][it].values, diag1['T'][it].units))
     name = '{:03d}.png'.format(it)
     fig.savefig(os.path.join(save_dir, 'frames', name), bbox_inches='tight', pad_inches=0., dpi=200)
+    plt.close(fig)
+
+plt.switch_backend("Qt5Agg")
+
+# %% movie of just velocity
+plt.switch_backend("Agg")
+
+ysl = slice(450, 2600)
+zsl = slice(60, 130)
+
+for it in range(diag1['T'].size):
+    fig, ax = plt.subplots(1, 1, figsize=(8, 3), sharex=True, sharey=True)
+    C = ax.pcolormesh(grid.Y[ysl]/1000 - 270, -grid.Z[zsl], diag1.VVEL[it, zsl, ysl, 0],
+                      vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
+    cb = plt.colorbar(C, orientation='vertical')
+    cb.set_label('Velocity (m s$^{-1}$)')
+    ax.invert_yaxis()
+    ax.set_title('{} {}'.format(diag1['T'][it].values, diag1['T'][it].units))
+    name = 'vvel_{:03d}.png'.format(it)
+    ax.set_xlabel('Distance (km)')
+    ax.set_ylabel('Depth (m)')
+    fig.savefig(os.path.join(save_dir, 'frames', name), bbox_inches='tight',
+                pad_inches=0., dpi=200)
     plt.close(fig)
 
 plt.switch_backend("Qt5Agg")
