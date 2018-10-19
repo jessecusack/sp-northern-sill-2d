@@ -79,6 +79,51 @@ for it in range(diag1['T'].size):
 
 plt.switch_backend("Qt5Agg")
 
+# %% movie of velocity and dissipation
+
+
+def add_ext_cbar1(fig, ax, C, w=None, h=None, x0=None, y0=None):
+    bbox = ax.get_position()
+    if w is None:
+        w = 0.05/fig.get_size_inches()[0]
+    if h is None:
+        h = (bbox.y1 - bbox.y0)
+    if x0 is None:
+        x0 = 1
+    if y0 is None:
+        y0 = bbox.y0
+    cax = fig.add_axes((x0, y0, w, h))
+    cb = plt.colorbar(C, cax, orientation='vertical')
+    return cb
+
+
+plt.switch_backend("Agg")
+
+ysl = slice(450, 2600)
+zsl = slice(60, 130)
+
+for it in range(diag1['T'].size):
+    fig, axs = plt.subplots(2, 1, figsize=(8, 5), sharex=True, sharey=True)
+    C0 = axs[0].pcolormesh(grid.Y[ysl]/1000 - 270, -grid.Z[zsl], np.log10(diag1.KLeps[it, zsl, ysl, 0]),
+                           vmin=-11, vmax=-4, rasterized=True)
+    cb0 = add_ext_cbar1(fig, axs[0], C0, x0=0.92)
+    cb0.set_label('$\log_{10} \epsilon$ (W kg$^{-1}$)')
+    C1 = axs[1].pcolormesh(grid.Y[ysl]/1000 - 270, -grid.Z[zsl], diag1.VVEL[it, zsl, ysl, 0],
+                           vmin=-0.3, vmax=0.3, rasterized=True, cmap='coolwarm')
+    cb1 = add_ext_cbar1(fig, axs[1], C1, x0=0.92)
+    cb1.set_label('Velocity (m s$^{-1}$)')
+    axs[0].invert_yaxis()
+    axs[0].set_title('{} {}'.format(diag1['T'][it].values, diag1['T'][it].units))
+    name = 'vvel_diss_{:03d}.png'.format(it)
+    axs[1].set_xlabel('Distance (km)')
+    axs[0].set_ylabel('Depth (m)')
+    axs[1].set_ylabel('Depth (m)')
+    fig.savefig(os.path.join(save_dir, 'frames', name), bbox_inches='tight',
+                pad_inches=0., dpi=200)
+    plt.close(fig)
+
+plt.switch_backend("Qt5Agg")
+
 # %% MP type plots
 plt.switch_backend("Agg")
 iyl = np.arange(860, 2600, 20)
